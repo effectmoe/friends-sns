@@ -85,19 +85,14 @@ export default function SearchUsers({ currentUserId }: SearchUsersProps) {
               {sentRequests.has(user.id) ? (
                 <span className="text-sm text-green-600">申請済み</span>
               ) : (
-                <form action={async () => {
-                  'use server';
-                  await handleSendRequest(user.id);
-                }}>
-                  <Button 
-                    type="submit"
-                    size="sm"
-                    variant="outline"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    友達申請
-                  </Button>
-                </form>
+                <Button 
+                  onClick={() => handleSendRequest(user.id)}
+                  size="sm"
+                  variant="outline"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  友達申請
+                </Button>
               )}
             </div>
           ))}
