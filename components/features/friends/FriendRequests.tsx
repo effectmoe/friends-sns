@@ -20,10 +20,17 @@ export default function FriendRequests({ requests, type }: FriendRequestsProps) 
   const handleAccept = async (requestId: string) => {
     setProcessingIds(prev => new Set(prev).add(requestId));
     try {
-      await acceptFriendRequest(requestId);
-      router.refresh();
+      const result = await acceptFriendRequest(requestId);
+      
+      if (result.success) {
+        router.refresh();
+      } else {
+        console.error('Failed to accept request:', result.error);
+        alert(`友達リクエストの承認に失敗しました: ${result.error}`);
+      }
     } catch (error) {
       console.error('Failed to accept request:', error);
+      alert('友達リクエストの承認に失敗しました');
     } finally {
       setProcessingIds(prev => {
         const newSet = new Set(prev);
@@ -36,10 +43,17 @@ export default function FriendRequests({ requests, type }: FriendRequestsProps) 
   const handleReject = async (requestId: string) => {
     setProcessingIds(prev => new Set(prev).add(requestId));
     try {
-      await rejectFriendRequest(requestId);
-      router.refresh();
+      const result = await rejectFriendRequest(requestId);
+      
+      if (result.success) {
+        router.refresh();
+      } else {
+        console.error('Failed to reject request:', result.error);
+        alert(`友達リクエストの拒否に失敗しました: ${result.error}`);
+      }
     } catch (error) {
       console.error('Failed to reject request:', error);
+      alert('友達リクエストの拒否に失敗しました');
     } finally {
       setProcessingIds(prev => {
         const newSet = new Set(prev);

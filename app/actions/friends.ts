@@ -26,34 +26,46 @@ export async function sendFriendRequest(recipientId: string, message?: string) {
 }
 
 export async function acceptFriendRequest(requestId: string) {
-  const user = await getUser();
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
-  const success = await FriendRepository.acceptFriendRequest(requestId);
-  
-  if (!success) {
-    throw new Error('Failed to accept friend request');
-  }
+    const success = await FriendRepository.acceptFriendRequest(requestId);
+    
+    if (!success) {
+      return { success: false, error: 'Failed to accept friend request' };
+    }
 
-  revalidatePath('/friends');
-  revalidatePath('/dashboard');
+    revalidatePath('/friends');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in acceptFriendRequest:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
 }
 
 export async function rejectFriendRequest(requestId: string) {
-  const user = await getUser();
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
-  const success = await FriendRepository.rejectFriendRequest(requestId);
-  
-  if (!success) {
-    throw new Error('Failed to reject friend request');
-  }
+    const success = await FriendRepository.rejectFriendRequest(requestId);
+    
+    if (!success) {
+      return { success: false, error: 'Failed to reject friend request' };
+    }
 
-  revalidatePath('/friends');
+    revalidatePath('/friends');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in rejectFriendRequest:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
 }
 
 export async function removeFriend(friendId: string) {
