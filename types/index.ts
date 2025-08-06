@@ -98,11 +98,17 @@ export interface EventParticipant {
 // Post types
 export interface Post {
   id: string;
-  authorId: string;
   content: string;
   images?: string[];
-  visibility: 'public' | 'friends_only';
+  visibility?: 'public' | 'friends_only';
+  likes: number;
+  comments: number;
+  shares: number;
   createdAt: Date;
+  updatedAt: Date;
+  author: User;
+  likedByMe?: boolean;
+  savedByMe?: boolean;
 }
 
 export interface Comment {
