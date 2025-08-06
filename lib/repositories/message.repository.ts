@@ -75,7 +75,7 @@ export class MessageRepository {
       
       WITH user, otherUser, 
            COLLECT(message)[0] as lastMessage,
-           COUNT(CASE WHEN NOT message.read AND sender.id != user.id THEN 1 END) as unreadCount
+           COUNT(CASE WHEN NOT message.read AND sender.id <> user.id THEN 1 END) as unreadCount
       
       RETURN {
         userId: otherUser.id,
