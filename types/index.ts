@@ -25,11 +25,15 @@ export interface MessageSettings {
 export interface FriendRequest {
   id: string;
   senderId: string;
+  senderName?: string;
+  senderEmail?: string;
   recipientId: string;
+  recipientName?: string;
+  recipientEmail?: string;
   status: 'pending' | 'accepted' | 'rejected';
   message?: string;
-  requestedAt: Date;
-  respondedAt?: Date;
+  requestedAt: Date | string;
+  respondedAt?: Date | string;
 }
 
 export interface FriendRelation {
@@ -42,11 +46,22 @@ export interface FriendRelation {
 export interface Message {
   id: string;
   senderId: string;
+  senderName?: string;
   recipientId: string;
+  recipientName?: string;
   content: string;
   encrypted: boolean;
   read: boolean;
-  createdAt: Date;
+  createdAt: Date | string;
+}
+
+export interface MessageThread {
+  userId: string;
+  username: string;
+  avatar?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
 }
 
 // Event types
