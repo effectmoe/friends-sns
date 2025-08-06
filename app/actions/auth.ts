@@ -8,16 +8,27 @@ import { headers } from 'next/headers';
 export async function signInWithOAuth(provider: 'google' | 'github') {
   const supabase = await createClient();
   
-  // Get the origin from request headers
+  // Get the origin from request headers with better fallback logic
   const headersList = headers();
   const host = headersList.get('host') || headersList.get('x-forwarded-host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  const protocol = headersList.get('x-forwarded-proto') || (host?.includes('vercel.app') ? 'https' : 'http');
   
-  // Construct the redirect URL based on the actual request
-  const origin = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  // Determine origin with production-first logic
+  let origin: string;
+  if (host) {
+    origin = `${protocol}://${host}`;
+  } else if (process.env.VERCEL_URL) {
+    // Vercel provides this automatically
+    origin = `https://${process.env.VERCEL_URL}`;
+  } else if (process.env.NODE_ENV === 'production') {
+    origin = 'https://friends-sns.vercel.app';
+  } else {
+    origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  }
+  
   const redirectTo = `${origin}/auth/callback`;
   
-  console.log('OAuth redirect URL:', redirectTo); // Debug log
+  console.log('OAuth redirect debug - host:', host, 'protocol:', protocol, 'NODE_ENV:', process.env.NODE_ENV, 'VERCEL_URL:', process.env.VERCEL_URL, 'origin:', origin, 'redirectTo:', redirectTo); // Debug log
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
