@@ -3,13 +3,26 @@
 import { createClient } from '@/lib/supabase/server';
 import { UserRepository } from '@/lib/repositories/user.repository';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 export async function signInWithOAuth(provider: 'google' | 'github') {
   const supabase = await createClient();
+  
+  // Get the origin from request headers
+  const headersList = headers();
+  const host = headersList.get('host') || headersList.get('x-forwarded-host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  
+  // Construct the redirect URL based on the actual request
+  const origin = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const redirectTo = `${origin}/auth/callback`;
+  
+  console.log('OAuth redirect URL:', redirectTo); // Debug log
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      redirectTo,
     },
   });
 
