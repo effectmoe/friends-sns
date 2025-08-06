@@ -1,14 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MessageSquare, Users, Newspaper } from 'lucide-react';
 import Link from 'next/link';
-import { getUser } from '@/app/actions/auth';
 
 export default async function DashboardPage() {
-  const user = await getUser();
-  
-  if (!user) {
-    return null;
-  }
+  // User is already fetched in layout, no need to fetch again
 
   // Dashboard stats - temporarily hardcoded until functions are ready
   const friendsCount = 0;
@@ -55,7 +50,7 @@ export default async function DashboardPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold">ダッシュボード</h1>
-        <p className="text-gray-600 mt-2">こんにちは、{user.username}さん！</p>
+        <p className="text-gray-600 mt-2">今日の活動状況</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
