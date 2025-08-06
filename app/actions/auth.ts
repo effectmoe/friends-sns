@@ -15,13 +15,14 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
   
   // Determine origin with production-first logic
   let origin: string;
-  if (host) {
+  if (process.env.NODE_ENV === 'production') {
+    // Always use production URL in production environment
+    origin = 'https://friends-sns.vercel.app';
+  } else if (host) {
     origin = `${protocol}://${host}`;
   } else if (process.env.VERCEL_URL) {
     // Vercel provides this automatically
     origin = `https://${process.env.VERCEL_URL}`;
-  } else if (process.env.NODE_ENV === 'production') {
-    origin = 'https://friends-sns.vercel.app';
   } else {
     origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   }
