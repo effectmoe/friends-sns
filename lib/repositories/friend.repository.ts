@@ -244,7 +244,7 @@ export class FriendRepository {
   }
 
   static async getFriends(userId: string): Promise<(User & { addedAt: Date })[]> {
-    const results = await runQuery<{ friend: any; relation: any }>(
+    const results = await runQuery<{ friend: any; addedAt: any }>(
       `
       MATCH (user:User {id: $userId})-[r:ADDED_AS_FRIEND]->(friend:User)
       RETURN friend, r.addedAt as addedAt
@@ -254,24 +254,8 @@ export class FriendRepository {
     );
 
     return results.map((result) => {
-      // Convert Neo4j DateTime to JavaScript Date
-      let addedAt: Date;
-      const dateTime = result.addedAt;
-      
-      if (dateTime && typeof dateTime === 'object' && 'toStandardDate' in dateTime) {
-        addedAt = dateTime.toStandardDate();
-      } else if (dateTime && typeof dateTime === 'object' && 'year' in dateTime) {
-        addedAt = new Date(
-          dateTime.year.low || dateTime.year,
-          (dateTime.month.low || dateTime.month) - 1,
-          dateTime.day.low || dateTime.day,
-          dateTime.hour.low || dateTime.hour || 0,
-          dateTime.minute.low || dateTime.minute || 0,
-          dateTime.second.low || dateTime.second || 0
-        );
-      } else {
-        addedAt = new Date(dateTime);
-      }
+      // runQuery now converts DateTime to ISO strings automatically
+      const addedAt = new Date(result.addedAt || new Date().toISOString());
       
       return {
         ...this.formatUser(result.friend),
@@ -405,58 +389,21 @@ export class FriendRepository {
     senderId: string,
     recipientId: string
   ): FriendRequest {
-    // Helper function to convert Neo4j DateTime
-    const convertDateTime = (dateTime: any): Date => {
-      if (!dateTime) return new Date();
-      
-      if (typeof dateTime === 'object' && 'toStandardDate' in dateTime) {
-        return dateTime.toStandardDate();
-      } else if (typeof dateTime === 'object' && 'year' in dateTime) {
-        return new Date(
-          dateTime.year.low || dateTime.year,
-          (dateTime.month.low || dateTime.month) - 1,
-          dateTime.day.low || dateTime.day,
-          dateTime.hour.low || dateTime.hour || 0,
-          dateTime.minute.low || dateTime.minute || 0,
-          dateTime.second.low || dateTime.second || 0
-        );
-      }
-      return new Date(dateTime);
-    };
-    
+    // runQuery now converts DateTime to ISO strings automatically
     return {
       id: data.id,
       senderId,
       recipientId,
       status: data.status,
       message: data.message || undefined,
-      requestedAt: convertDateTime(data.requestedAt),
-      respondedAt: data.respondedAt ? convertDateTime(data.respondedAt) : undefined,
+      requestedAt: new Date(data.requestedAt || new Date().toISOString()),
+      respondedAt: data.respondedAt ? new Date(data.respondedAt) : undefined,
     };
   }
 
   private static formatUser(data: any): User {
-    // Convert Neo4j DateTime to JavaScript Date
-    const createdAt = data.createdAt;
-    let createdAtDate: Date;
-    
-    if (createdAt && typeof createdAt === 'object' && 'toStandardDate' in createdAt) {
-      // Neo4j DateTime object
-      createdAtDate = createdAt.toStandardDate();
-    } else if (createdAt && typeof createdAt === 'object' && 'year' in createdAt) {
-      // Neo4j DateTime properties
-      createdAtDate = new Date(
-        createdAt.year.low || createdAt.year,
-        (createdAt.month.low || createdAt.month) - 1,
-        createdAt.day.low || createdAt.day,
-        createdAt.hour.low || createdAt.hour || 0,
-        createdAt.minute.low || createdAt.minute || 0,
-        createdAt.second.low || createdAt.second || 0
-      );
-    } else {
-      // String or already a Date
-      createdAtDate = new Date(createdAt);
-    }
+    // runQuery now converts DateTime to ISO strings automatically
+    const createdAtDate = new Date(data.createdAt || new Date().toISOString());
     
     return {
       id: data.id,

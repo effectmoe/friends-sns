@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { FriendRequest, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { acceptFriendRequest, rejectFriendRequest } from '@/app/actions/friends';
+import { useRouter } from 'next/navigation';
 
 interface FriendRequestsProps {
   requests: (FriendRequest & { sender?: User; recipient?: User })[];
@@ -12,6 +14,40 @@ interface FriendRequestsProps {
 }
 
 export default function FriendRequests({ requests, type }: FriendRequestsProps) {
+  const router = useRouter();
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+
+  const handleAccept = async (requestId: string) => {
+    setProcessingIds(prev => new Set(prev).add(requestId));
+    try {
+      await acceptFriendRequest(requestId);
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to accept request:', error);
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(requestId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleReject = async (requestId: string) => {
+    setProcessingIds(prev => new Set(prev).add(requestId));
+    try {
+      await rejectFriendRequest(requestId);
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to reject request:', error);
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(requestId);
+        return newSet;
+      });
+    }
+  };
   if (requests.length === 0) {
     return (
       <p className="text-center text-gray-500 py-8">
@@ -55,32 +91,32 @@ export default function FriendRequests({ requests, type }: FriendRequestsProps) 
             
             {type === 'received' && (
               <div className="flex space-x-2">
-                <form action={async () => {
-                  'use server';
-                  await acceptFriendRequest(request.id);
-                }}>
-                  <Button 
-                    type="submit"
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
+                <Button 
+                  onClick={() => handleAccept(request.id)}
+                  disabled={processingIds.has(request.id)}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {processingIds.has(request.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
                     <Check className="h-4 w-4" />
-                  </Button>
-                </form>
+                  )}
+                </Button>
                 
-                <form action={async () => {
-                  'use server';
-                  await rejectFriendRequest(request.id);
-                }}>
-                  <Button 
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700"
-                  >
+                <Button 
+                  onClick={() => handleReject(request.id)}
+                  disabled={processingIds.has(request.id)}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  {processingIds.has(request.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
                     <X className="h-4 w-4" />
-                  </Button>
-                </form>
+                  )}
+                </Button>
               </div>
             )}
             

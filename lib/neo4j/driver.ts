@@ -34,6 +34,48 @@ export async function closeDriver(): Promise<void> {
   }
 }
 
+// Helper function to convert Neo4j DateTime to ISO string
+function convertDateTime(value: any): any {
+  if (!value) return value;
+  
+  // Check if it's a Neo4j DateTime object
+  if (value && typeof value === 'object') {
+    // Neo4j DateTime with toStandardDate method
+    if ('toStandardDate' in value) {
+      return value.toStandardDate().toISOString();
+    }
+    // Neo4j DateTime with year, month, day properties
+    if ('year' in value && 'month' in value && 'day' in value) {
+      const year = value.year?.low || value.year || 0;
+      const month = value.month?.low || value.month || 1;
+      const day = value.day?.low || value.day || 1;
+      const hour = value.hour?.low || value.hour || 0;
+      const minute = value.minute?.low || value.minute || 0;
+      const second = value.second?.low || value.second || 0;
+      
+      return new Date(year, month - 1, day, hour, minute, second).toISOString();
+    }
+  }
+  
+  return value;
+}
+
+// Helper function to recursively convert DateTime objects in properties
+function convertDateTimeInProperties(properties: any): any {
+  if (!properties || typeof properties !== 'object') {
+    return properties;
+  }
+  
+  const converted: any = {};
+  for (const key in properties) {
+    if (properties.hasOwnProperty(key)) {
+      const value = properties[key];
+      converted[key] = convertDateTime(value);
+    }
+  }
+  return converted;
+}
+
 // Helper function to run a query
 export async function runQuery<T = any>(
   query: string,
@@ -46,11 +88,12 @@ export async function runQuery<T = any>(
       const obj: any = {};
       record.keys.forEach((key) => {
         const value = record.get(key);
-        // If it's a Neo4j node, get its properties
+        // If it's a Neo4j node, get its properties and convert DateTime
         if (value && value.properties) {
-          obj[key] = value.properties;
+          obj[key] = convertDateTimeInProperties(value.properties);
         } else {
-          obj[key] = value;
+          // For non-node values, also check for DateTime
+          obj[key] = convertDateTime(value);
         }
       });
       return obj as T;
