@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
   
   // Form states
   const [nickname, setNickname] = useState('');
@@ -32,6 +33,7 @@ export default function ProfilePage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
     loadUserProfile();
   }, [user]);
 
@@ -296,7 +298,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm font-medium">登録日</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(currentUser.createdAt).toLocaleDateString('ja-JP')}
+                  {mounted ? new Date(currentUser.createdAt).toLocaleDateString('ja-JP') : ''}
                 </p>
               </div>
             </CardContent>

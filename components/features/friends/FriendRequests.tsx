@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FriendRequest, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,11 @@ interface FriendRequestsProps {
 export default function FriendRequests({ requests, type }: FriendRequestsProps) {
   const router = useRouter();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleAccept = async (requestId: string) => {
     setProcessingIds(prev => new Set(prev).add(requestId));
@@ -98,7 +103,7 @@ export default function FriendRequests({ requests, type }: FriendRequestsProps) 
                   <p className="text-sm text-gray-600 mt-1">{request.message}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">
-                  {new Date(request.requestedAt).toLocaleDateString('ja-JP')}
+                  {mounted ? new Date(request.requestedAt).toLocaleDateString('ja-JP') : ''}
                 </p>
               </div>
             </div>

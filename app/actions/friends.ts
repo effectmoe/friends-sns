@@ -69,19 +69,25 @@ export async function rejectFriendRequest(requestId: string) {
 }
 
 export async function removeFriend(friendId: string) {
-  const user = await getUser();
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
-  const success = await FriendRepository.removeFriend(user.id, friendId);
-  
-  if (!success) {
-    throw new Error('Failed to remove friend');
-  }
+    const success = await FriendRepository.removeFriend(user.id, friendId);
+    
+    if (!success) {
+      return { success: false, error: 'Failed to remove friend' };
+    }
 
-  revalidatePath('/friends');
-  revalidatePath('/dashboard');
+    revalidatePath('/friends');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in removeFriend:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
 }
 
 export async function searchUsers(query: string) {
