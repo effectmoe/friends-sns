@@ -35,44 +35,54 @@ export class PostRepository {
     return result[0]?.post || null;
   }
 
-  static async getRecentPosts(limit: number = 20): Promise<Post[]> {
-    const query = `
-      MATCH (p:Post)<-[:POSTED]-(u:User)
-      RETURN p {
-        .*, 
-        author: u {.*},
-        likedByMe: EXISTS((me:User {id: $currentUserId})-[:LIKES]->(p)),
-        savedByMe: EXISTS((me:User {id: $currentUserId})-[:SAVED]->(p))
-      } as post
-      ORDER BY p.createdAt DESC
-      LIMIT $limit
-    `;
+  static async getRecentPosts(limit: number = 20, currentUserId: string = ''): Promise<Post[]> {
+    try {
+      const query = `
+        MATCH (p:Post)<-[:POSTED]-(u:User)
+        RETURN p {
+          .*, 
+          author: u {.*},
+          likedByMe: EXISTS((me:User {id: $currentUserId})-[:LIKES]->(p)),
+          savedByMe: EXISTS((me:User {id: $currentUserId})-[:SAVED]->(p))
+        } as post
+        ORDER BY p.createdAt DESC
+        LIMIT $limit
+      `;
 
-    const result = await runQuery(query, {
-      limit,
-      currentUserId: '', // Will be set in component
-    });
+      const result = await runQuery(query, {
+        limit,
+        currentUserId,
+      });
 
-    return result.map(r => r.post);
+      return result.map(r => r.post).filter(Boolean);
+    } catch (error) {
+      console.error('Error fetching recent posts:', error);
+      return [];
+    }
   }
 
   static async getUserPosts(userId: string, limit: number = 20): Promise<Post[]> {
-    const query = `
-      MATCH (u:User {id: $userId})-[:POSTED]->(p:Post)
-      RETURN p {
-        .*, 
-        author: u {.*}
-      } as post
-      ORDER BY p.createdAt DESC
-      LIMIT $limit
-    `;
+    try {
+      const query = `
+        MATCH (u:User {id: $userId})-[:POSTED]->(p:Post)
+        RETURN p {
+          .*, 
+          author: u {.*}
+        } as post
+        ORDER BY p.createdAt DESC
+        LIMIT $limit
+      `;
 
-    const result = await runQuery(query, {
-      userId,
-      limit,
-    });
+      const result = await runQuery(query, {
+        userId,
+        limit,
+      });
 
-    return result.map(r => r.post);
+      return result.map(r => r.post).filter(Boolean);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+      return [];
+    }
   }
 
   static async likePost(postId: string, userId: string): Promise<boolean> {

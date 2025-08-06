@@ -23,7 +23,7 @@ export default async function BoardPage() {
   }
 
   // Get recent posts
-  const posts = await PostRepository.getRecentPosts(50);
+  const posts = await PostRepository.getRecentPosts(50, user.id);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
