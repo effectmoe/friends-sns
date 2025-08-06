@@ -42,43 +42,33 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form action={async () => {
-          'use server';
-          await signInWithOAuth('google');
-        }}>
-          <Button 
-            type="submit" 
-            className="w-full" 
-            variant="outline"
-            disabled={isLoading !== null}
-          >
-            {isLoading === 'google' ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Mail className="mr-2 h-4 w-4" />
-            )}
-            Googleでログイン
-          </Button>
-        </form>
+        <Button 
+          onClick={() => handleOAuthSignIn('google')}
+          className="w-full" 
+          variant="outline"
+          disabled={isLoading !== null}
+        >
+          {isLoading === 'google' ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Mail className="mr-2 h-4 w-4" />
+          )}
+          Googleでログイン
+        </Button>
         
-        <form action={async () => {
-          'use server';
-          await signInWithOAuth('github');
-        }}>
-          <Button 
-            type="submit" 
-            className="w-full" 
-            variant="outline"
-            disabled={isLoading !== null}
-          >
-            {isLoading === 'github' ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Github className="mr-2 h-4 w-4" />
-            )}
-            GitHubでログイン
-          </Button>
-        </form>
+        <Button 
+          onClick={() => handleOAuthSignIn('github')}
+          className="w-full" 
+          variant="outline"
+          disabled={isLoading !== null}
+        >
+          {isLoading === 'github' ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Github className="mr-2 h-4 w-4" />
+          )}
+          GitHubでログイン
+        </Button>
         
         <div className="border-t pt-4">
           <p className="text-center text-sm text-gray-600">
