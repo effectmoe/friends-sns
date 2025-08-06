@@ -35,11 +35,12 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
     provider,
     options: {
       redirectTo,
-      queryParams: {
+      queryParams: provider === 'google' ? {
         // Force account selection for Google
         access_type: 'offline',
-        prompt: 'select_account',
-      },
+        prompt: 'consent select_account',
+      } : undefined,
+      skipBrowserRedirect: false,
     },
   });
 
