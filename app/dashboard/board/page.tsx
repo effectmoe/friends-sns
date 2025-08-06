@@ -1,6 +1,8 @@
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default async function BoardPage() {
+export default function BoardPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
