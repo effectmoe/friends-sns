@@ -27,12 +27,12 @@ export default async function DashboardLayout({
 
   const navItems = [
     { href: '/dashboard', label: 'ダッシュボード', icon: Home },
-    { href: '/profile', label: 'マイページ', icon: User },
-    { href: '/friends', label: '友達', icon: Users },
-    { href: '/messages', label: 'メッセージ', icon: MessageSquare },
-    { href: '/events', label: 'イベント', icon: Calendar },
-    { href: '/board', label: '掲示板', icon: Newspaper },
-    { href: '/settings', label: '設定', icon: Settings },
+    { href: '/dashboard/profile', label: 'マイページ', icon: User },
+    { href: '/dashboard/friends', label: '友達', icon: Users },
+    { href: '/dashboard/messages', label: 'メッセージ', icon: MessageSquare },
+    { href: '/dashboard/events', label: 'イベント', icon: Calendar },
+    { href: '/dashboard/board', label: '掲示板', icon: Newspaper },
+    { href: '/dashboard/settings', label: '設定', icon: Settings },
   ];
 
   return (
