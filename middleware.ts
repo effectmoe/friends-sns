@@ -42,10 +42,17 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
-  if (!user && !isPublicRoute && request.nextUrl.pathname !== '/') {
-    // no user, potentially respond by redirecting the user to the login page
+  if (!user && !isPublicRoute) {
+    // no user, redirect to login page
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // If user is logged in and on root path, redirect to dashboard
+  if (user && request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
