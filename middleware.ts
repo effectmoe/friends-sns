@@ -3,6 +3,28 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // Skip middleware for static assets and API routes
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/register', '/auth/callback'];
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+
+  // Fast path: Skip auth check for public routes
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  // Only check authentication for protected routes
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -30,34 +52,23 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make your server
-  // vulnerable to CSRF attacks.
+  // Use getSession instead of getUser for better performance
+  const { data: { session } } = await supabase.auth.getSession();
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/register', '/auth/callback'];
-  const isPublicRoute = publicRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
-  );
-
-  if (!user && !isPublicRoute) {
-    // no user, redirect to login page
+  if (!session) {
+    // no session, redirect to login page
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
   // If user is logged in and on root path, redirect to dashboard
-  if (user && request.nextUrl.pathname === '/') {
+  if (session && pathname === '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're trying to modify the response, do it on supabaseResponse object.
   return supabaseResponse;
 }
 

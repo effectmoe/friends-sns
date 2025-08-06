@@ -56,6 +56,12 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
 export async function signOut() {
   const supabase = await createClient();
   
+  // Get current session to clear cache
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user?.email) {
+    clearUserCache(session.user.email);
+  }
+  
   // Clear all sessions
   const { error } = await supabase.auth.signOut({ scope: 'global' });
   
@@ -67,19 +73,31 @@ export async function signOut() {
   redirect('/login');
 }
 
+import { getCachedUser, setCachedUser, clearUserCache } from '@/lib/supabase/cache';
+
 export async function getUser() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) {
-    console.log('No Supabase user found');
+  // First try to get session (faster than getUser)
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.user) {
+    console.log('No Supabase session found');
     return null;
   }
   
-  console.log('Supabase user:', user.email);
+  const email = session.user.email!;
+  console.log('Supabase user:', email);
+  
+  // Check cache first
+  const cachedUser = getCachedUser(email);
+  if (cachedUser) {
+    console.log('Using cached user data');
+    return cachedUser;
+  }
   
   // Check if user exists in Neo4j
-  let dbUser = await UserRepository.findByEmail(user.email!);
+  let dbUser = await UserRepository.findByEmail(email);
   
   console.log('DB user found:', dbUser);
   
@@ -87,14 +105,17 @@ export async function getUser() {
     // Create user in Neo4j if not exists
     console.log('Creating new user in Neo4j');
     dbUser = await UserRepository.create({
-      email: user.email!,
-      username: user.email!.split('@')[0], // Default username from email
+      email: email,
+      username: email.split('@')[0], // Default username from email
       profile: {
-        avatar: user.user_metadata.avatar_url,
+        avatar: session.user.user_metadata.avatar_url,
       },
     });
     console.log('Created user:', dbUser);
   }
+  
+  // Cache the user
+  setCachedUser(email, dbUser);
   
   return dbUser;
 }

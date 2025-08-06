@@ -14,10 +14,14 @@ const nextConfig = {
     },
   },
   images: {
-    domains: [],
+    domains: ['lh3.googleusercontent.com', 'avatars.githubusercontent.com'],
   },
-  // outputをstandaloneから削除（Vercelでは不要）
-  // output: 'standalone', // Vercelでは自動設定されるため削除
+  // Performance optimizations
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  // Optimize production builds
+  productionBrowserSourceMaps: false,
 }
 
 module.exports = nextConfig
