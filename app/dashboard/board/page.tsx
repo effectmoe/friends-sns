@@ -9,7 +9,22 @@ import PostList from '@/components/features/board/PostList';
 import { PostRepository } from '@/lib/repositories/post.repository';
 
 export default async function BoardPage() {
-  const user = await getUser();
+  let user;
+  let posts: any[] = [];
+  
+  try {
+    user = await getUser();
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">ユーザー情報の取得に失敗しました</h2>
+          <p className="text-gray-600">エラー: {String(error)}</p>
+        </div>
+      </div>
+    );
+  }
   
   if (!user) {
     return (
@@ -22,8 +37,13 @@ export default async function BoardPage() {
     );
   }
 
-  // Get recent posts
-  const posts = await PostRepository.getRecentPosts(50, user.id);
+  // Get recent posts with error handling
+  try {
+    posts = await PostRepository.getRecentPosts(50, user.id);
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    // Continue with empty posts array
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

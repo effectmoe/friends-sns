@@ -35,6 +35,11 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
     provider,
     options: {
       redirectTo,
+      queryParams: {
+        // Force account selection for Google
+        access_type: 'offline',
+        prompt: 'select_account',
+      },
     },
   });
 
@@ -49,9 +54,12 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
 
 export async function signOut() {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
+  
+  // Clear all sessions
+  const { error } = await supabase.auth.signOut({ scope: 'global' });
   
   if (error) {
+    console.error('Signout error:', error);
     throw new Error(error.message);
   }
   
